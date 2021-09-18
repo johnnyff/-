@@ -37,35 +37,21 @@ def bfs(maze):
         for new_x, new_y in maze.neighborPoints(x,y):
             if visited[new_x][new_y]==0:
                 if maze.isObjective(new_x, new_y):
-                    print("find path")
-                    for i in range(maze.rows):
-                        print(visited[i])
-                    path.append()
+                    visited[new_x][new_y] = visited[x][y] + 1
+                    length = visited[new_x][new_y]
 
+                    cur_x= new_x
+                    cur_y= new_y
+                    path.append((cur_x, cur_y))
+                    for j in range(1,length):
+                        for temp_x, temp_y in maze.neighborPoints(cur_x,cur_y):
+                            if(visited[temp_x][temp_y])==(length-j):
+                                cur_x = temp_x
+                                cur_y = temp_y
+                                path.append((cur_x,cur_y))
 
-
-
-                    break
                 visited[new_x][new_y]= visited[x][y]+1
                 queue.append((new_x,new_y))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -124,20 +110,47 @@ def astar(maze):
 
     ####################### Write Your Code Here ################################
 
+    start_Node = Node(None, start_point)
+    end_Node = Node(None, end_point)
+
+    fringe_list = []
+    closed_list = []
+
+    fringe_list.append(start_Node)
+
+    while fringe_list:
+        cur_Node = fringe_list[0]
+        cur_index= 0
 
 
+        for index, node in enumerate(fringe_list):
+            if node.__lt__(cur_Node):
+                cur_Node = node
+                cur_index = index
+        fringe_list.pop(cur_index)
+        closed_list.append(cur_Node)
 
+        if cur_Node.__eq__(end_Node):
+            cur = cur_Node
+            while cur is not None:
+                path.append(cur.location)
+                cur = cur.parent
+            return path[::-1]
 
+        x, y =  cur_Node.location
+        for child_x, child_y in maze.neighborPoints(x, y):
+            new_Node = Node(cur_Node, (child_x,child_y))
+            if new_Node in closed_list:
+                continue
 
+            new_Node.g = cur_Node.g+1
+            new_Node.h = manhatten_dist(new_Node.location,end_Node.location)
+            new_Node.f = new_Node.g+new_Node.h
 
-
-
-
-
-
-
-
-
+            for check in fringe_list:
+                if(new_Node.location == check.location and new_Node.g > check.g):
+                    continue
+            fringe_list.append(new_Node)
 
 
     return path
