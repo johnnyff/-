@@ -1,10 +1,8 @@
 ###### Write Your Library Here ###########
 from collections import deque
-
-from itertools import combinations
-
-
-
+from timeit import default_timer as timer
+from datetime import timedelta
+from tqdm import tqdm
 
 #########################################
 
@@ -54,8 +52,6 @@ def bfs(maze):
 
                 visited[new_x][new_y]= visited[x][y]+1
                 queue.append((new_x,new_y))
-
-
 
 
     return path
@@ -178,74 +174,6 @@ def astar_four_circles(maze):
     [문제 03] 제시된 stage2의 맵 세가지를 A* Algorithm을 통해 최단 경로를 return하시오.(30점)
     (단 Heurstic Function은 위의 stage2_heuristic function을 직접 정의하여 사용해야 한다.)
     """
-    # end_points = maze.circlePoints()
-    # end_points.sort()
-    #
-    # paths=[]
-    #
-    # ####################### Write Your Code Here ################################
-    #
-    # start_point = maze.startPoint()
-    # comb = list(combinations(end_points,2))
-    # for start_point, end_points in end_points:
-    #     path = []
-    #     print("Start node = ", start_point , 'End node = ', end_point)
-    #     start_Node = Node(None, start_point)
-    #     end_Node = Node(None, end_point)
-    #
-    #     fringe_list = []
-    #     closed_list = []
-    #
-    #     fringe_list.append(start_Node)
-    #
-    #     while fringe_list:
-    #         cur_Node = fringe_list[0]
-    #         cur_index = 0
-    #
-    #         for index, node in enumerate(fringe_list):
-    #             if node.__lt__(cur_Node):
-    #                 cur_Node = node
-    #                 cur_index = index
-    #         fringe_list.pop(cur_index)
-    #         closed_list.append(cur_Node)
-    #
-    #         if cur_Node.__eq__(end_Node):
-    #             if end_point == end_points[-1]:
-    #                 cur = cur_Node
-    #             else :
-    #                 cur = cur_Node.parent
-    #             while cur is not None:
-    #                 path.append(cur.location)
-    #                 cur = cur.parent
-    #             start_point = end_point
-    #             paths.append(path)
-    #             break
-    #
-    #         x, y = cur_Node.location
-    #         for child_x, child_y in maze.neighborPoints(x, y):
-    #             new_Node = Node(cur_Node, (child_x, child_y))
-    #             if new_Node in closed_list:
-    #                 continue
-    #
-    #             new_Node.g = cur_Node.g + 1
-    #             new_Node.h = stage2_heuristic(new_Node.location, end_Node.location)
-    #             new_Node.f = new_Node.g + new_Node.h
-    #
-    #             for check in fringe_list:
-    #                 if (new_Node.location == check.location and new_Node.g > check.g):
-    #                     continue
-    #             fringe_list.append(new_Node)
-    # result = []
-    # for path in paths:
-    #     for loc in path[::-1]:
-    #         result.append(loc)
-    # print(result)
-    # return result
-    #
-    #
-
-
-
 
     end_points=maze.circlePoints()
     end_points.sort()
@@ -296,7 +224,7 @@ def astar_four_circles(maze):
             new_Node.g = cur_Node.g + 1
             new_Node.h = stage2_heuristic(new_Node.location, new_Node.obj)
             new_Node.f = new_Node.g + new_Node.h
-            
+
             fringe_list.append(new_Node)
 
     return path
@@ -307,21 +235,130 @@ def astar_four_circles(maze):
 
 # -------------------- Stage 03: Many circles - A* Algorithm -------------------- #
 
-def mst(objectives, edges):
 
-    cost_sum=0
+# def get_edge_cost(maze, start, target):
+#     start_point = start
+#     target_point = target
+#     print("Start : ",start, "  target : ",target)
+#     path = []
+#     start_x, start_y = start_point
+#     queue = deque()
+#     queue.append(start_point)
+#     visited = [[0] * maze.cols for _ in range(maze.rows)]
+#     visited[start_x][start_y] = maze.getStatesSearch() + 1
+#     while queue:
+#         x, y = queue.popleft()
+#         for new_x, new_y in maze.neighborPoints(x, y):
+#             if visited[new_x][new_y] == 0:
+#                 if (new_x, new_y) == target_point:
+#                     visited[new_x][new_y] = visited[x][y] + 1
+#                     length = visited[new_x][new_y]
+#
+#                     cur_x = new_x
+#                     cur_y = new_y
+#                     path.append((cur_x, cur_y))
+#                     for j in range(1, length):
+#                         for temp_x, temp_y in maze.neighborPoints(cur_x, cur_y):
+#                             if (visited[temp_x][temp_y]) == (length - j):
+#                                 cur_x = temp_x
+#                                 cur_y = temp_y
+#                                 path.append((cur_x, cur_y))
+#                     for i in visited:
+#                         print(i)
+#                     return path[::-1]
+#
+#
+#                 visited[new_x][new_y] = visited[x][y] + 1
+#                 queue.append((new_x, new_y))
+#
+#
+#     return []
+
+
+
+def get_edge_cost(maze, start, target):
+    start_point = start
+    end_point = target
+    path = []
+
     ####################### Write Your Code Here ################################
 
+    start_Node = Node(None, start_point)
+    end_Node = Node(None, end_point)
 
+    fringe_list = []
+    closed_list = {}
 
+    fringe_list.append(start_Node)
 
+    while fringe_list:
+        cur_Node = fringe_list[0]
+        cur_index = 0
 
+        for index, node in enumerate(fringe_list):
+            if node.__lt__(cur_Node):
+                cur_Node = node
+                cur_index = index
+        fringe_list.pop(cur_index)
+        # closed_list.append(cur_Node)
+        x,y = cur_Node.location
+        if ((x,y) in closed_list):
+            continue
+        if cur_Node.__eq__(end_Node):
+            cur = cur_Node
+            while cur is not None:
+                path.append(cur.location)
+                cur = cur.parent
+            return path[::-1]
+        closed_list[(x,y)] = cur_Node.f
+        for child_x, child_y in maze.neighborPoints(x, y):
+            new_Node = Node(cur_Node, (child_x, child_y))
+            if (child_x,child_y) in closed_list:
+                continue
 
+            new_Node.g = cur_Node.g + 1
+            new_Node.h = manhatten_dist(new_Node.location, end_Node.location)
+            new_Node.f = new_Node.g + new_Node.h
 
+            if (child_x, child_y) not in closed_list:
+                fringe_list.append(new_Node)
+            else :
+                if(closed_list[(child_x,child_y)]>new_Node.f):
+                    closed_list[(child_x,child_y)] = new_Node.f
+                    fringe_list.append(new_Node)
 
+            # for check in fringe_list:
+            #     if (new_Node.location == check.location and new_Node.g > check.g):
+            #         continue
+    return []
 
-
-
+def mst(objectives, costs):
+    #Prim algorithm
+    cost_sum=0
+    left_objectives = list(objectives[1:])
+    selected = list(set(objectives)-set(left_objectives))
+    ####################### Write Your Code Here ################################
+    while (len(selected)<=len(objectives)):
+        temp = ()
+        min = 999999
+        for selected_ob in selected:
+            for left_ob in left_objectives:
+                # print("selected : ",selected_ob)
+                # print("lefe : ", left_ob)
+                if costs[(selected_ob,left_ob)]:
+                    # print("cost: ", costs[(selected_ob,left_ob)])
+                    if min > costs[(selected_ob,left_ob)]:
+                        min = costs[(selected_ob,left_ob)]
+                        temp = left_ob
+        cost_sum+= min
+        # print(left_objectives)
+        # print(temp)
+        if (len(selected)== len(objectives)):
+            break
+        # print("temp is ", temp)
+        selected.append(temp)
+        left_objectives.remove(temp)
+        # print("left : ", left_objectives)
 
 
     return cost_sum
@@ -329,8 +366,8 @@ def mst(objectives, edges):
     ############################################################################
 
 
-def stage3_heuristic():
-    pass
+def stage3_heuristic(objectives, costs):
+    return mst(objectives, costs)
 
 
 def astar_many_circles(maze):
@@ -339,34 +376,93 @@ def astar_many_circles(maze):
     (단 Heurstic Function은 위의 stage3_heuristic function을 직접 정의하여 사용해야 하고, minimum spanning tree
     알고리즘을 활용한 heuristic function이어야 한다.)
     """
-
     end_points= maze.circlePoints()
     end_points.sort()
 
     path=[]
 
     ####################### Write Your Code Here ################################
+    targets = end_points
+    edge_list = {}
+    cost_list = {}
+    # print("targets : ",targets)
+    for i in tqdm(targets):
+        for j in tqdm(targets):
+            if (i != j) :
+                temp_path = get_edge_cost(maze,i,j)
+                cost_list[(i,j)] = len(temp_path)
+                edge_list[(i,j)] = temp_path
+                # else:
+                #     cost_list[(i,j)] = cost_list[(j,i)]
+                #     edge_list[(i,j)] = edge_list[(j,i)]
 
+    # for ii, i in tqdm(enumerate(targets)):
+    #     for jj,j in tqdm(enumerate(targets)):
+    #         if (i!= j):
+    #             print(cost_list[(i,j)])
+    #     print("\n")
+    # print(cost_list)
+    end = timer() #
 
+    start_point = maze.startPoint()
+    start_Node = Node(None, start_point)
+    fringe_list = []
+    start_Node.obj = targets
+    fringe_list.append(start_Node)
 
+    while len(targets):
+        print(targets)
+        cur_Node = fringe_list[0]
+        cur_index = 0
 
+        for index, node in enumerate(fringe_list):
+            if (node.g+node.h<cur_Node.g+cur_Node.h):
+                cur_Node = node
+                cur_index = index
+        fringe_list.pop(cur_index)
+        if cur_Node.location in cur_Node.obj:
+            cur_Node.obj = tuple(x for x in cur_Node.obj if x != cur_Node.location)
+            fringe_list = []
 
+        if len(cur_Node.obj)==0:
+            cur = cur_Node
+            while cur is not None:
+                if (cur.parent.location == start_point):
+                    path= path+(get_edge_cost(maze,cur.location,start_Node.location))
+                    break
+                path = path + edge_list[(cur.location,cur.parent.location)]
+                cur = cur.parent
+            return path[::-1]
+        # print(cur_Node.f)
+        for ob in cur_Node.obj:
+            new_Node = Node(cur_Node, ob)
+            new_Node.obj = cur_Node.obj
+            new_Node.g = cur_Node.g+1
+            new_Node.h = stage3_heuristic(cur_Node.obj,cost_list)
+            new_Node.f = new_Node.g+ new_Node.h
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+            fringe_list.append(new_Node)
+        end = timer()  #
     return path
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
     ############################################################################
