@@ -1,7 +1,6 @@
 ###### Write Your Library Here ###########
 from collections import deque
-from timeit import default_timer as timer
-from datetime import timedelta
+
 from tqdm import tqdm
 
 #########################################
@@ -192,7 +191,6 @@ def astar_four_circles(maze):
 
     while fringe_list:
         cur_Node = fringe_list[0]
-        # print(targets)
 
         cur_index = 0
 
@@ -206,15 +204,13 @@ def astar_four_circles(maze):
             fringe_list = []
         if(cur_Node.location,cur_Node.obj) not in closed_list:
             closed_list[(cur_Node.location,cur_Node.obj)] = cur_Node
-        # closed_list.append(cur_Node)
-        # cur_Node.obj = targets
+
         if len(cur_Node.obj)==0:
             cur = cur_Node
             while cur is not None:
                 path.append(cur.location)
                 cur = cur.parent
             return path[::-1]
-        # print(cur_Node.f)
         x, y = cur_Node.location
         for child_x, child_y in maze.neighborPoints(x, y):
             if ((child_x,child_y),cur_Node.obj) in closed_list:
@@ -234,46 +230,6 @@ def astar_four_circles(maze):
 
 
 # -------------------- Stage 03: Many circles - A* Algorithm -------------------- #
-
-
-# def get_edge_cost(maze, start, target):
-#     start_point = start
-#     target_point = target
-#     print("Start : ",start, "  target : ",target)
-#     path = []
-#     start_x, start_y = start_point
-#     queue = deque()
-#     queue.append(start_point)
-#     visited = [[0] * maze.cols for _ in range(maze.rows)]
-#     visited[start_x][start_y] = maze.getStatesSearch() + 1
-#     while queue:
-#         x, y = queue.popleft()
-#         for new_x, new_y in maze.neighborPoints(x, y):
-#             if visited[new_x][new_y] == 0:
-#                 if (new_x, new_y) == target_point:
-#                     visited[new_x][new_y] = visited[x][y] + 1
-#                     length = visited[new_x][new_y]
-#
-#                     cur_x = new_x
-#                     cur_y = new_y
-#                     path.append((cur_x, cur_y))
-#                     for j in range(1, length):
-#                         for temp_x, temp_y in maze.neighborPoints(cur_x, cur_y):
-#                             if (visited[temp_x][temp_y]) == (length - j):
-#                                 cur_x = temp_x
-#                                 cur_y = temp_y
-#                                 path.append((cur_x, cur_y))
-#                     for i in visited:
-#                         print(i)
-#                     return path[::-1]
-#
-#
-#                 visited[new_x][new_y] = visited[x][y] + 1
-#                 queue.append((new_x, new_y))
-#
-#
-#     return []
-
 
 
 def get_edge_cost(maze, start, target):
@@ -300,7 +256,6 @@ def get_edge_cost(maze, start, target):
                 cur_Node = node
                 cur_index = index
         fringe_list.pop(cur_index)
-        # closed_list.append(cur_Node)
         x,y = cur_Node.location
         if ((x,y) in closed_list):
             continue
@@ -327,9 +282,7 @@ def get_edge_cost(maze, start, target):
                     closed_list[(child_x,child_y)] = new_Node.f
                     fringe_list.append(new_Node)
 
-            # for check in fringe_list:
-            #     if (new_Node.location == check.location and new_Node.g > check.g):
-            #         continue
+
     return []
 
 def mst(objectives, costs):
@@ -351,14 +304,11 @@ def mst(objectives, costs):
                         min = costs[(selected_ob,left_ob)]
                         temp = left_ob
         cost_sum+= min
-        # print(left_objectives)
-        # print(temp)
+
         if (len(selected)== len(objectives)):
             break
-        # print("temp is ", temp)
         selected.append(temp)
         left_objectives.remove(temp)
-        # print("left : ", left_objectives)
 
 
     return cost_sum
@@ -385,24 +335,12 @@ def astar_many_circles(maze):
     targets = end_points
     edge_list = {}
     cost_list = {}
-    # print("targets : ",targets)
     for i in tqdm(targets):
         for j in tqdm(targets):
             if (i != j) :
                 temp_path = get_edge_cost(maze,i,j)
                 cost_list[(i,j)] = len(temp_path)
                 edge_list[(i,j)] = temp_path
-                # else:
-                #     cost_list[(i,j)] = cost_list[(j,i)]
-                #     edge_list[(i,j)] = edge_list[(j,i)]
-
-    # for ii, i in tqdm(enumerate(targets)):
-    #     for jj,j in tqdm(enumerate(targets)):
-    #         if (i!= j):
-    #             print(cost_list[(i,j)])
-    #     print("\n")
-    # print(cost_list)
-    end = timer() #
 
     start_point = maze.startPoint()
     start_Node = Node(None, start_point)
@@ -411,7 +349,6 @@ def astar_many_circles(maze):
     fringe_list.append(start_Node)
 
     while len(targets):
-        print(targets)
         cur_Node = fringe_list[0]
         cur_index = 0
 
@@ -433,7 +370,6 @@ def astar_many_circles(maze):
                 path = path + edge_list[(cur.location,cur.parent.location)]
                 cur = cur.parent
             return path[::-1]
-        # print(cur_Node.f)
         for ob in cur_Node.obj:
             new_Node = Node(cur_Node, ob)
             new_Node.obj = cur_Node.obj
@@ -442,7 +378,6 @@ def astar_many_circles(maze):
             new_Node.f = new_Node.g+ new_Node.h
 
             fringe_list.append(new_Node)
-        end = timer()  #
     return path
 
 
